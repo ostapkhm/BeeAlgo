@@ -1,7 +1,7 @@
 #include <iostream>
 #include <utility>
 #include <matplot/matplot.h>
-#include "Hive.h"
+#include "Hive/Hive.h"
 
 namespace plt = matplot;
 

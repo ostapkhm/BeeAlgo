@@ -1,13 +1,12 @@
-#ifndef BEESALGO_ROSENBROKBEE_H
-#define BEESALGO_ROSENBROKBEE_H
+#ifndef BEESALGO_LEVIBEE_H
+#define BEESALGO_LEVIBEE_H
 
-// Z = 100 * (Y - X**2)**2 + (X - 1)**2
 
-#include "Bee.h"
+#include "../Bee/Bee.h"
 
-class RosenbrokBee: public Bee {
+class LeviBee: public Bee {
 public:
-    RosenbrokBee();
+    LeviBee();
 
     static std::vector<double> get_start_range(){
         std::vector<double> res(count_, 250.0);
@@ -27,4 +26,4 @@ private:
 };
 
 
-#endif //BEESALGO_ROSENBROKBEE_H
+#endif //BEESALGO_LEVIBEE_H

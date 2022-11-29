@@ -5,11 +5,11 @@
 
 #include <utility>
 
-#include "Bee.h"
-#include "SphericalBee.h"
-#include "RastriginBee.h"
-#include "RosenbrokBee.h"
-#include "LeviBee.h"
+#include "../Bee/Bee.h"
+#include "../DifferentBees/SphericalBee.h"
+#include "../DifferentBees/RastriginBee.h"
+#include "../DifferentBees/RosenbrokBee.h"
+#include "../DifferentBees/LeviBee.h"
 
 class Hive {
 public:

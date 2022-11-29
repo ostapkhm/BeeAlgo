@@ -6,7 +6,7 @@
 #include <ctime>
 #include <cstdlib>
 
-#include "Utils.h"
+#include "../Utils.h"
 
 enum class BeeType{ kSpherical, kRastrigin, kRosenbrok, kLeviBee};
 

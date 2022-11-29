@@ -1,13 +1,13 @@
-#ifndef BEESALGO_RASTRIGINBEE_H
-#define BEESALGO_RASTRIGINBEE_H
+#ifndef BEESALGO_ROSENBROKBEE_H
+#define BEESALGO_ROSENBROKBEE_H
 
+// Z = 100 * (Y - X**2)**2 + (X - 1)**2
 
-#include "Bee.h"
-#include "cmath"
+#include "../Bee/Bee.h"
 
-class RastriginBee: public Bee {
+class RosenbrokBee: public Bee {
 public:
-    RastriginBee();
+    RosenbrokBee();
 
     static std::vector<double> get_start_range(){
         std::vector<double> res(count_, 250.0);
@@ -26,4 +26,5 @@ private:
     void CalculateFitness() override;
 };
 
-#endif //BEESALGO_RASTRIGINBEE_H
+
+#endif //BEESALGO_ROSENBROKBEE_H

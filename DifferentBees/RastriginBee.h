@@ -1,15 +1,16 @@
-#ifndef BEESALGO_SPHERICALBEE_H
-#define BEESALGO_SPHERICALBEE_H
+#ifndef BEESALGO_RASTRIGINBEE_H
+#define BEESALGO_RASTRIGINBEE_H
 
 
-#include "Bee.h"
+#include "../Bee/Bee.h"
+#include "cmath"
 
-class SphericalBee: public Bee {
+class RastriginBee: public Bee {
 public:
-    SphericalBee();
+    RastriginBee();
 
     static std::vector<double> get_start_range(){
-        std::vector<double> res(count_, 150.0);
+        std::vector<double> res(count_, 250.0);
         return res;
     }
 
@@ -25,5 +26,4 @@ private:
     void CalculateFitness() override;
 };
 
-
-#endif //BEESALGO_SPHERICALBEE_H
+#endif //BEESALGO_RASTRIGINBEE_H

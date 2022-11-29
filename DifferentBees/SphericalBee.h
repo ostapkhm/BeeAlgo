@@ -1,15 +1,15 @@
-#ifndef BEESALGO_LEVIBEE_H
-#define BEESALGO_LEVIBEE_H
+#ifndef BEESALGO_SPHERICALBEE_H
+#define BEESALGO_SPHERICALBEE_H
 
 
-#include "Bee.h"
+#include "../Bee/Bee.h"
 
-class LeviBee: public Bee {
+class SphericalBee: public Bee {
 public:
-    LeviBee();
+    SphericalBee();
 
     static std::vector<double> get_start_range(){
-        std::vector<double> res(count_, 250.0);
+        std::vector<double> res(count_, 150.0);
         return res;
     }
 
@@ -26,4 +26,4 @@ private:
 };
 
 
-#endif //BEESALGO_LEVIBEE_H
+#endif //BEESALGO_SPHERICALBEE_H

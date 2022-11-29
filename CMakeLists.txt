@@ -15,8 +15,8 @@ if(NOT matplotplusplus_POPULATED)
     add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-set(Headers Bee.h Hive.h SphericalBee.h Utils.h RastriginBee.h RosenbrokBee.h )
-set(Sources main.cpp Bee.cpp Hive.cpp SphericalBee.cpp  RastriginBee.cpp RosenbrokBee.cpp LeviBee.cpp LeviBee.h)
+set(Headers Bee/Bee.h Hive/Hive.h DifferentBees/SphericalBee.h Utils.h DifferentBees/RastriginBee.h DifferentBees/RosenbrokBee.h)
+set(Sources main.cpp Bee/Bee.cpp Hive/Hive.cpp DifferentBees/SphericalBee.cpp DifferentBees/RastriginBee.cpp DifferentBees/RosenbrokBee.cpp DifferentBees/LeviBee.cpp DifferentBees/LeviBee.h)
 
 add_executable(BeesAlgo ${Headers} ${Sources})
 target_link_libraries(BeesAlgo PUBLIC matplot)

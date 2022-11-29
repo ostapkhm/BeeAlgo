@@ -1,7 +1,7 @@
 #include <utility>
 #include "Hive.h"
-#include "RastriginBee.h"
-#include "LeviBee.h"
+#include "../DifferentBees/RastriginBee.h"
+#include "../DifferentBees/LeviBee.h"
 
 Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int medium_sites_count,
            int best_sites_count, std::vector<double> range, BeeType type) {
