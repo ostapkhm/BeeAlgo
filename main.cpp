@@ -5,9 +5,8 @@
 
 namespace plt = matplot;
 
-
-void plot(std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> data, BeeType type){
-    auto [X, Y] = plt::meshgrid(plt::linspace(-70, 70, 150), plt::linspace(-70, 70, 150));
+void plot(std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> data, BeeType type, int plot_idx){
+    auto [X, Y] = plt::meshgrid(plt::linspace(-100, 100, 180), plt::linspace(-100, 100, 180));
 
     plt::vector_2d Z;
 
@@ -41,10 +40,30 @@ void plot(std::tuple<std::vector<double>, std::vector<double>, std::vector<doubl
     graph->scatter3(x, y, z, "filled");
     graph->hold(plt::off);
 
-    graph->view(40, 55);
-    plt::show();
-    plt::save("plot.jpg");
+    graph->view(40, 60);
+
+    std::string filename = "../plots/plot_" + std::to_string(plot_idx) + ".jpg";
+    plt::save(filename);
 }
+
+
+void plot_best_sites(Hive* hive, BeeType type, int count){
+    std::vector<double> x;
+    std::vector<double> y;
+    std::vector<double> z;
+
+    for(auto el:hive->get_best_sites()){
+        x.push_back(el->get_position()[0]);
+        y.push_back(el->get_position()[1]);
+        z.push_back(el->get_fitness());
+    }
+
+    plot(std::make_tuple(x, y, z), type, count);
+    x.clear();
+    y.clear();
+    z.clear();
+}
+
 
 int main() {
     srand (static_cast <unsigned> (time(nullptr)));
@@ -52,28 +71,25 @@ int main() {
     int scout_bee_count = 300;
     int selected_bee_count =  10;
     int best_bee_count = 30;
-    int medium_sites_count = 15;
+    int selected_sites_count = 15;
     int best_sites_count = 5;
     BeeType type = BeeType::kLeviBee;
 
-    int max_iteration = 2000;
+    int max_iteration = 1000;
     int max_func_counter = 10;
     std::vector<double> koefs = LeviBee::get_koef_range();
     int func_counter;
 
-    Hive hive(scout_bee_count, selected_bee_count, best_bee_count, medium_sites_count, best_sites_count,
+    Hive hive(scout_bee_count, selected_bee_count, best_bee_count, selected_sites_count, best_sites_count,
               LeviBee::get_start_range(), type);
 
 
     double best_func_val = -1.0e9;
     func_counter = 0;
+    int counter = 0;
 
 
-    std::vector<double> x;
-    std::vector<double> y;
-    std::vector<double> z;
-
-    for(int i = 1; i < max_iteration; i++){
+    for(int i = 1; i <= max_iteration; i++){
         hive.Step();
 
         if(hive.get_best_fitness() != best_func_val){
@@ -101,16 +117,14 @@ int main() {
                 std::cout << "New Range -> " << new_range[0] << " , " << new_range[1] << std::endl;
                 std::cout << "Best position->" << hive.get_best_position()[0] << " " << hive.get_best_position()[1] << std::endl;
                 std::cout << "Best fitness->" << hive.get_best_fitness() << std::endl;
-
             }
         }
 
-        x.push_back(hive.get_best_position()[0]);
-        y.push_back(hive.get_best_position()[1]);
-        z.push_back(hive.get_best_fitness());
+        if(i % 200 == 0){
+            plot_best_sites(&hive, type, counter);
+            counter++;
+        }
     }
-
-    plot(std::make_tuple(x, y, z), type);
 
     return 0;
 }

@@ -1,21 +1,19 @@
 #include <utility>
 #include "Hive.h"
-#include "../DifferentBees/RastriginBee.h"
-#include "../DifferentBees/LeviBee.h"
 
-Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int medium_sites_count,
+Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count,
            int best_sites_count, std::vector<double> range, BeeType type) {
     scout_bee_count_ = scout_bee_count;
     selected_bee_count_ = selected_bee_count;
     best_bee_count_ = best_bee_count;
-    medium_sites_count_ = medium_sites_count;
+    selected_sites_count_ = selected_sites_count;
     best_sites_count_ = best_sites_count;
     range_ = std::move(range);
     type_ = type;
 
     best_fitness_ = -1.0e9;
 
-    int bee_count = scout_bee_count_ + selected_bee_count_ * medium_sites_count_ + best_bee_count_ * best_sites_count_;
+    int bee_count = scout_bee_count_ + selected_bee_count_ * selected_sites_count_ + best_bee_count_ * best_sites_count_;
 
     std::cout << "Bee count -> " << bee_count << std::endl;
 
@@ -69,7 +67,7 @@ bool Hive::BeeWasUsed(Bee* bee) {
         res = true;
     }
 
-    if (std::find(medium_sites_.begin(), medium_sites_.end(), bee) != medium_sites_.end()) {
+    if (std::find(selected_sites_.begin(), selected_sites_.end(), bee) != selected_sites_.end()) {
         res = true;
     }
     return res;
@@ -83,7 +81,7 @@ void Hive::Step() {
     Bee* current_bee;
     int current_idx = 1;
 
-    for(current_idx; current_idx < swarm_.size();){
+    for(; current_idx < swarm_.size();){
         current_bee = swarm_[current_idx];
 
         if(current_bee->HasUniqueSite(best_sites_, range_)){
@@ -97,19 +95,19 @@ void Hive::Step() {
         current_idx++;
     }
 
-    medium_sites_ = {};
+    selected_sites_ = {};
 
     for(; current_idx < swarm_.size();){
         current_bee = swarm_[current_idx];
 
         current_bee->HasUniqueSite(best_sites_, range_);
-        current_bee->HasUniqueSite(medium_sites_, range_);
+        current_bee->HasUniqueSite(selected_sites_, range_);
 
-        if(current_bee->HasUniqueSite(best_sites_, range_) && current_bee->HasUniqueSite(medium_sites_, range_) ){
-            medium_sites_.push_back(current_bee);
+        if(current_bee->HasUniqueSite(best_sites_, range_) && current_bee->HasUniqueSite(selected_sites_, range_) ){
+            selected_sites_.push_back(current_bee);
         }
 
-        if(medium_sites_.size() == medium_sites_count_){
+        if(selected_sites_.size() == selected_sites_count_){
             break;
         }
         current_idx++;
@@ -123,7 +121,7 @@ void Hive::Step() {
         bee_index = SendBees(best_bee->get_position(), bee_index, best_bee_count_);
     }
 
-    for(auto medium_bee: medium_sites_){
+    for(auto medium_bee: selected_sites_){
         bee_index = SendBees(medium_bee->get_position(), bee_index, selected_bee_count_);
     }
 

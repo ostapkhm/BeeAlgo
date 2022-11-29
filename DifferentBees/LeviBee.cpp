@@ -6,8 +6,8 @@
 int LeviBee::count_ = 2;
 
 LeviBee::LeviBee() {
-    min_pos_range_ = std::vector<double> (count_, -70.0);
-    max_pos_range_ = std::vector<double> (count_, 70.0);
+    min_pos_range_ = std::vector<double> (count_, -100.0);
+    max_pos_range_ = std::vector<double> (count_, 100.0);
 
     for(int i = 0; i < count_; i++){
         position_.push_back(Utils::Uniform(min_pos_range_[i], max_pos_range_[i]));

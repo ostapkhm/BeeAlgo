@@ -13,7 +13,7 @@
 
 class Hive {
 public:
-    Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int medium_sites_count, int best_sites_count,
+    Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count, int best_sites_count,
          std::vector<double> range, BeeType type);
 
     int SendBees(const std::vector<double>& position, int idx, int count);
@@ -36,11 +36,15 @@ public:
         return best_position_;
     }
 
+    std::vector<Bee*> get_best_sites(){
+        return best_sites_;
+    }
+
 private:
     int scout_bee_count_;
     int selected_bee_count_;
     int best_bee_count_;
-    int medium_sites_count_;
+    int selected_sites_count_;
     int best_sites_count_;
 
     BeeType type_;
@@ -52,7 +56,7 @@ private:
     std::vector<Bee*> swarm_;
 
     std::vector<Bee*> best_sites_;
-    std::vector<Bee*> medium_sites_;
+    std::vector<Bee*> selected_sites_;
 
     bool BeeWasUsed(Bee* bee);
     void SwarmInfo();
