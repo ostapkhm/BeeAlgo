@@ -15,9 +15,6 @@ Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int 
 
     int bee_count = scout_bee_count_ + selected_bee_count_ * selected_sites_count_ + best_bee_count_ * best_sites_count_;
 
-    std::cout << "Bee count -> " << bee_count << std::endl;
-
-
     for(int i = 0; i < bee_count; i++){
         switch (type_) {
             case BeeType::kSpherical:
@@ -38,7 +35,6 @@ Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int 
     sort(swarm_.begin(), swarm_.end(), Bee::Compare);
     best_position_ = swarm_[0]->get_position();
     best_fitness_ = swarm_[0]->get_fitness();
-
 }
 
 int Hive::SendBees(const std::vector<double>& position, int idx, int count) {
@@ -61,16 +57,15 @@ int Hive::SendBees(const std::vector<double>& position, int idx, int count) {
 }
 
 bool Hive::BeeWasUsed(Bee* bee) {
-    bool res = false;
-
     if (std::find(best_sites_.begin(), best_sites_.end(), bee) != best_sites_.end()) {
-        res = true;
+        return true;
     }
 
     if (std::find(selected_sites_.begin(), selected_sites_.end(), bee) != selected_sites_.end()) {
-        res = true;
+        return true;
     }
-    return res;
+
+    return false;
 }
 
 void Hive::Step() {
@@ -81,7 +76,7 @@ void Hive::Step() {
     Bee* current_bee;
     int current_idx = 1;
 
-    for(; current_idx < swarm_.size();){
+    for(; current_idx < swarm_.size(); current_idx++){
         current_bee = swarm_[current_idx];
 
         if(current_bee->HasUniqueSite(best_sites_, range_)){
@@ -91,8 +86,6 @@ void Hive::Step() {
         if(best_sites_.size() == best_sites_count_){
             break;
         }
-
-        current_idx++;
     }
 
     selected_sites_ = {};
@@ -135,8 +128,6 @@ void Hive::Step() {
     sort(swarm_.begin(), swarm_.end(), Bee::Compare);
     best_position_ = swarm_[0]->get_position();
     best_fitness_ = swarm_[0]->get_fitness();
-
-    //SwarmInfo();
 }
 
 void Hive::SwarmInfo() {

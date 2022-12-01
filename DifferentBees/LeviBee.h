@@ -9,7 +9,7 @@ public:
     LeviBee();
 
     static std::vector<double> get_start_range(){
-        std::vector<double> res(count_, 150.0);
+        std::vector<double> res(count_, 100.0);
         return res;
     }
 

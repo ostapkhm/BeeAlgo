@@ -1,6 +1,6 @@
 #include "Bee.h"
 
-bool Bee::HasUniqueSite(std::vector<Bee*>bees, std::vector<double> range) {
+bool Bee::HasUniqueSite(const std::vector<Bee*>& bees, std::vector<double> range) {
     if(bees.empty()){
         return true;
     }
@@ -72,6 +72,22 @@ std::string Bee::ToString() {
     res += "Fitness ->";
     res += std::to_string(fitness_);
     res += "\n";
+
+    res += "MaxRange(";
+
+    for(auto el: max_pos_range_){
+        res += std::to_string(el) + " ";
+    }
+
+    res += ")\n";
+
+    res += "MinRange(";
+
+    for(auto el: min_pos_range_){
+        res += std::to_string(el) + " ";
+    }
+
+    res += ")\n";
     return res;
 }
 

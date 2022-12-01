@@ -32,18 +32,20 @@ void plot(std::tuple<std::vector<double>, std::vector<double>, std::vector<doubl
 
     auto [x, y, z] = std::move(data);
 
-    auto graph = matplot::gca();
+    matplot::figure_handle fig = matplot::figure(false);
+    fig->size(1720,1080);
+
+    auto graph = fig->current_axes();
     graph->colororder(std::vector<std::string> {"magenta"});
 
     graph->hold(plt::on);
     graph->surf(X, Y, Z);
     graph->scatter3(x, y, z, "filled");
     graph->hold(plt::off);
-
-    graph->view(40, 60);
-
+    graph->view(45, 60);
     std::string filename = "../plots/plot_" + std::to_string(plot_idx) + ".jpg";
-    plt::save(filename);
+    fig->save(filename);
+    graph->clear();
 }
 
 
@@ -88,8 +90,9 @@ int main() {
     func_counter = 0;
     int counter = 0;
 
+    hive.Step();
 
-    for(int i = 1; i <= max_iteration; i++){
+    for(int i = 0; i < max_iteration; i++){
         hive.Step();
 
         if(hive.get_best_fitness() != best_func_val){

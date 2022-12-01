@@ -13,7 +13,7 @@ enum class BeeType{ kSpherical, kRastrigin, kRosenbrok, kLeviBee};
 class Bee {
 public:
     virtual void CalculateFitness() = 0;
-    bool HasUniqueSite(std::vector<Bee*>bees, std::vector<double> range);
+    bool HasUniqueSite(const std::vector<Bee*>& bees, std::vector<double> range);
     static bool Compare(Bee* bee1, Bee* bee2);
     void GoTo(std::vector<double> position, std::vector<double> position_range);
     void GoToRandom();
@@ -34,9 +34,9 @@ protected:
 // fitness_ - value of objective function
 
     std::vector<double> max_pos_range_;
+    std::vector<double> min_pos_range_;
     std::vector<double> position_;
     double fitness_;
-    std::vector<double> min_pos_range_;
 };
 
 
