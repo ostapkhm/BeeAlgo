@@ -11,6 +11,7 @@ Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int 
     selected_sites_count_ = selected_sites_count;
     best_sites_count_ = best_sites_count;
     search_range_ = std::move(search_range);
+    maximization_ = maximization;
 
     int bee_count = scout_bee_count_ + selected_bee_count_ * selected_sites_count_ + best_bee_count_ * best_sites_count_;
 

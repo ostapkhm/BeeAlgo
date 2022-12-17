@@ -17,6 +17,9 @@ public:
     void Step();
 
     double get_best_fitness(){
+        if(maximization_){
+            return -best_fitness_;
+        }
         return best_fitness_;
     }
 
@@ -48,6 +51,8 @@ private:
     int best_bee_count_;
     int selected_sites_count_;
     int best_sites_count_;
+
+    bool maximization_;
 
     std::vector<double> search_range_;
     std::vector<double>  best_position_;

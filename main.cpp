@@ -9,7 +9,7 @@ void plot(const std::function<double(double, double)>& objective_func,
           const std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>& data2,
           int plot_idx){
 
-    auto [X, Y] = plt::meshgrid(plt::linspace(-100, 100, 180), plt::linspace(-100, 100, 180));
+    auto [X, Y] = plt::meshgrid(plt::linspace(-100, 100, 300), plt::linspace(-100, 100, 380));
 
     plt::vector_2d Z;
     Z = plt::transform(X, Y, objective_func);
@@ -29,7 +29,7 @@ void plot(const std::function<double(double, double)>& objective_func,
     graph->scatter3(x1, y1, z1, "filled");
     graph->scatter3(x2, y2, z2, "filled");
     graph->hold(plt::off);
-    graph->view(45, 60);
+    graph->view(55, 65);
     std::string filename = "../plots/plot_" + std::to_string(plot_idx) + ".jpg";
     fig->save(filename);
     graph->clear();
@@ -59,6 +59,8 @@ void plot_sites(Hive* hive, int count, const std::function<double(double, double
     plot(objective_func, std::make_tuple(x1, y1, z1), std::make_tuple(x2, y2, z2), count);
 }
 
+//------------- Functions -------------------//
+
 double (*LeviFunc_)(double, double){
     [](double x, double y){
         return pow(sin(3 * M_PI * x), 2) + pow((x - 1), 2) * (1 + pow(sin(3 * M_PI * y), 2))
@@ -70,6 +72,53 @@ double LeviFunc(std::vector<double> X){
     return LeviFunc_(X[0], X[1]);
 }
 
+
+double (*EgholderFunc_)(double, double){
+        [](double x, double y){
+            return -(y + 47)* sin(sqrt(std::abs(x/2 + y + 47))) - x*sin(sqrt(std::abs(x - (y + 47))));
+        }
+};
+
+double EgholderFunc(std::vector<double> X){
+    return EgholderFunc_(X[0], X[1]);
+}
+
+double (*RastriginFunc_)(double, double){
+        [](double x, double y){
+            return 10 * 2 + (x*x - 10*cos(2 * plt::pi * x)) + (y*y - 10*cos(2 * plt::pi * y));
+        }
+};
+
+double RastriginFunc(std::vector<double> X){
+    return RastriginFunc_(X[0], X[1]);
+}
+
+
+double (*RosenbrokFunc_)(double, double){
+        [](double x, double y){
+            return 100 * pow((y - x*x), 2) + pow(x - 1, 2);
+        }
+};
+
+double RosenbrokFunc(std::vector<double> X){
+    return RosenbrokFunc_(X[0], X[1]);
+}
+
+double (*DeJoungFunc_)(double, double){
+        [](double x, double y){
+            return x*x+y*y;
+        }
+};
+
+double DeJoungFunc(std::vector<double> X){
+    return DeJoungFunc_(X[0], X[1]);
+}
+
+//------------- Functions -------------------//
+
+
+
+
 int main() {
     srand (static_cast <unsigned> (time(nullptr)));
 
@@ -78,8 +127,8 @@ int main() {
     int best_bee_count = 30;
     int selected_sites_count = 15;
     int best_sites_count = 5;
-    double min_x_pos = -100;
-    double max_x_pos = 100;
+    double min_x_pos = -52;
+    double max_x_pos = 52;
 
     int max_iteration = 1000;
     int max_func_counter = 10;
@@ -87,7 +136,8 @@ int main() {
     int func_counter;
 
     Hive hive(scout_bee_count, selected_bee_count, best_bee_count, selected_sites_count, best_sites_count,
-              &LeviFunc, Bee::get_search_range(), min_x_pos, max_x_pos);
+              &DeJoungFunc, Bee::get_search_range(), min_x_pos, max_x_pos);
+
 
     double best_func_val = -1.0e9;
     func_counter = 0;
@@ -103,7 +153,7 @@ int main() {
             std::cout << "Best position->" << hive.get_best_position()[0] << " " << hive.get_best_position()[1] << std::endl;
             std::cout << "Best fitness->" << hive.get_best_fitness() << std::endl;
 
-            plot_sites(&hive, counter, LeviFunc_);
+            plot_sites(&hive, counter, DeJoungFunc_);
             counter++;
         }
         else{

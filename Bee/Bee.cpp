@@ -18,10 +18,10 @@ Bee::Bee(double min_X_value, double max_X_value, double (*calculate_func)(std::v
 
 void Bee::CalculateFitness() {
     if(maximisation_){
-        fitness_ = calculate_func_({position_[0], position_[1]});
+        fitness_ = -calculate_func_({position_[0], position_[1]});
     }
     else{
-        fitness_ = -calculate_func_({position_[0], position_[1]});
+        fitness_ = calculate_func_({position_[0], position_[1]});
     }
 }
 
@@ -44,7 +44,7 @@ bool Bee::HasUniqueSite(const std::vector<Bee*>& bees, std::vector<double> range
 }
 
 bool Bee::Compare(Bee *bee1, Bee *bee2) {
-    return bee1->fitness_ > bee2->fitness_;
+    return bee1->fitness_ < bee2->fitness_;
 }
 
 void Bee::CheckPosition() {
