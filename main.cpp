@@ -1,46 +1,33 @@
 #include <iostream>
-#include <utility>
 #include <matplot/matplot.h>
 #include "Hive/Hive.h"
 
 namespace plt = matplot;
 
-void plot(std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> data, BeeType type, int plot_idx){
+void plot(const std::function<double(double, double)>& objective_func,
+          const std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>& data1,
+          const std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>& data2,
+          int plot_idx){
+
     auto [X, Y] = plt::meshgrid(plt::linspace(-100, 100, 180), plt::linspace(-100, 100, 180));
 
     plt::vector_2d Z;
+    Z = plt::transform(X, Y, objective_func);
 
-    if(type == BeeType::kRastrigin){
-        Z = plt::transform(X, Y, [](double x, double y) {
-            return 10 * 2 + (x*x - 10*cos(2 * plt::pi * x)) + (y*y - 10*cos(2 * plt::pi * y));
-        });
-    }
+    auto [x1, y1, z1] = data1;
+    auto [x2, y2, z2] = data2;
 
-    if(type == BeeType::kRosenbrok){
-        Z = plt::transform(X, Y, [](double x, double y) {
-            return 100 * pow((y - x*x), 2) + pow(x - 1, 2);
-        });
-    }
-
-    if(type == BeeType::kLeviBee){
-        Z = plt::transform(X, Y, [](double x, double y) {
-            return pow(sin(3 * M_PI * x), 2) + pow((x - 1), 2) * (1 + pow(sin(3 * M_PI * y), 2))
-                   + pow((y - 1), 2) * (1 + pow(sin(2 * M_PI * y), 2));
-        });
-    }
-
-
-    auto [x, y, z] = std::move(data);
-
-    matplot::figure_handle fig = matplot::figure(false);
+    matplot::figure_handle fig = matplot::figure(true);
     fig->size(1720,1080);
 
     auto graph = fig->current_axes();
-    graph->colororder(std::vector<std::string> {"magenta"});
+    graph->colororder(std::vector<std::string> {"red", "green"});
 
     graph->hold(plt::on);
     graph->surf(X, Y, Z);
-    graph->scatter3(x, y, z, "filled");
+    graph->colormap(plt::palette::winter());
+    graph->scatter3(x1, y1, z1, "filled");
+    graph->scatter3(x2, y2, z2, "filled");
     graph->hold(plt::off);
     graph->view(45, 60);
     std::string filename = "../plots/plot_" + std::to_string(plot_idx) + ".jpg";
@@ -49,23 +36,39 @@ void plot(std::tuple<std::vector<double>, std::vector<double>, std::vector<doubl
 }
 
 
-void plot_best_sites(Hive* hive, BeeType type, int count){
-    std::vector<double> x;
-    std::vector<double> y;
-    std::vector<double> z;
+void plot_sites(Hive* hive, int count, const std::function<double(double, double)>& objective_func){
+    std::vector<double> x1;
+    std::vector<double> x2;
+    std::vector<double> y1;
+    std::vector<double> y2;
+    std::vector<double> z1;
+    std::vector<double> z2;
 
     for(auto el:hive->get_best_sites()){
-        x.push_back(el->get_position()[0]);
-        y.push_back(el->get_position()[1]);
-        z.push_back(el->get_fitness());
+        x1.push_back(el->get_position()[0]);
+        y1.push_back(el->get_position()[1]);
+        z1.push_back(el->get_fitness());
     }
 
-    plot(std::make_tuple(x, y, z), type, count);
-    x.clear();
-    y.clear();
-    z.clear();
+    for(auto el:hive->get_selected_sites()){
+        x2.push_back(el->get_position()[0]);
+        y2.push_back(el->get_position()[1]);
+        z2.push_back(el->get_fitness());
+    }
+
+    plot(objective_func, std::make_tuple(x1, y1, z1), std::make_tuple(x2, y2, z2), count);
 }
 
+double (*LeviFunc_)(double, double){
+    [](double x, double y){
+        return pow(sin(3 * M_PI * x), 2) + pow((x - 1), 2) * (1 + pow(sin(3 * M_PI * y), 2))
+               + pow((y - 1), 2) * (1 + pow(sin(2 * M_PI * y), 2));
+    }
+};
+
+double LeviFunc(std::vector<double> X){
+    return LeviFunc_(X[0], X[1]);
+}
 
 int main() {
     srand (static_cast <unsigned> (time(nullptr)));
@@ -75,22 +78,20 @@ int main() {
     int best_bee_count = 30;
     int selected_sites_count = 15;
     int best_sites_count = 5;
-    BeeType type = BeeType::kLeviBee;
+    double min_x_pos = -100;
+    double max_x_pos = 100;
 
     int max_iteration = 1000;
     int max_func_counter = 10;
-    std::vector<double> koefs = LeviBee::get_koef_range();
+    std::vector<double> koefs = Bee::get_koef_range();
     int func_counter;
 
     Hive hive(scout_bee_count, selected_bee_count, best_bee_count, selected_sites_count, best_sites_count,
-              LeviBee::get_start_range(), type);
-
+              &LeviFunc, Bee::get_search_range(), min_x_pos, max_x_pos);
 
     double best_func_val = -1.0e9;
     func_counter = 0;
     int counter = 0;
-
-    hive.Step();
 
     for(int i = 0; i < max_iteration; i++){
         hive.Step();
@@ -101,6 +102,9 @@ int main() {
             std::cout << "\nIteration number->" << i << std::endl;
             std::cout << "Best position->" << hive.get_best_position()[0] << " " << hive.get_best_position()[1] << std::endl;
             std::cout << "Best fitness->" << hive.get_best_fitness() << std::endl;
+
+            plot_sites(&hive, counter, LeviFunc_);
+            counter++;
         }
         else{
             func_counter += 1;
@@ -121,11 +125,6 @@ int main() {
                 std::cout << "Best position->" << hive.get_best_position()[0] << " " << hive.get_best_position()[1] << std::endl;
                 std::cout << "Best fitness->" << hive.get_best_fitness() << std::endl;
             }
-        }
-
-        if(i % 200 == 0){
-            plot_best_sites(&hive, type, counter);
-            counter++;
         }
     }
 

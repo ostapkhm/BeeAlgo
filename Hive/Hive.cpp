@@ -2,37 +2,24 @@
 #include "Hive.h"
 
 Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count,
-           int best_sites_count, std::vector<double> range, BeeType type) {
+           int best_sites_count, double (*objective_func)(std::vector<double>), std::vector<double> search_range,
+           double min_x_bees_pos, double min_y_bees_pos, bool maximization) {
+
     scout_bee_count_ = scout_bee_count;
     selected_bee_count_ = selected_bee_count;
     best_bee_count_ = best_bee_count;
     selected_sites_count_ = selected_sites_count;
     best_sites_count_ = best_sites_count;
-    range_ = std::move(range);
-    type_ = type;
-
-    best_fitness_ = -1.0e9;
+    search_range_ = std::move(search_range);
 
     int bee_count = scout_bee_count_ + selected_bee_count_ * selected_sites_count_ + best_bee_count_ * best_sites_count_;
 
     for(int i = 0; i < bee_count; i++){
-        switch (type_) {
-            case BeeType::kSpherical:
-                swarm_.push_back(new SphericalBee());
-                break;
-            case BeeType::kRastrigin:
-                swarm_.push_back(new RastriginBee());
-                break;
-            case BeeType::kRosenbrok:
-                swarm_.push_back(new RosenbrokBee());
-                break;
-            case BeeType::kLeviBee:
-                swarm_.push_back(new LeviBee());
-                break;
-        }
+        swarm_.push_back(new Bee(min_x_bees_pos, min_y_bees_pos, objective_func, maximization));
     }
 
-    sort(swarm_.begin(), swarm_.end(), Bee::Compare);
+    // For the first time analyzing info only from scout bees
+    sort(swarm_.begin(), swarm_.begin() + scout_bee_count_, Bee::Compare);
     best_position_ = swarm_[0]->get_position();
     best_fitness_ = swarm_[0]->get_fitness();
 }
@@ -48,7 +35,7 @@ int Hive::SendBees(const std::vector<double>& position, int idx, int count) {
         current_bee = swarm_[idx];
 
         if(!BeeWasUsed(current_bee)){
-            current_bee->GoTo(position, range_);
+            current_bee->GoTo(position, search_range_);
         }
         idx++;
     }
@@ -79,11 +66,12 @@ void Hive::Step() {
     for(; current_idx < swarm_.size(); current_idx++){
         current_bee = swarm_[current_idx];
 
-        if(current_bee->HasUniqueSite(best_sites_, range_)){
+        if(current_bee->HasUniqueSite(best_sites_, search_range_)){
             best_sites_.push_back(current_bee);
         }
 
         if(best_sites_.size() == best_sites_count_){
+            current_idx++;
             break;
         }
     }
@@ -93,10 +81,10 @@ void Hive::Step() {
     for(; current_idx < swarm_.size();){
         current_bee = swarm_[current_idx];
 
-        current_bee->HasUniqueSite(best_sites_, range_);
-        current_bee->HasUniqueSite(selected_sites_, range_);
+        current_bee->HasUniqueSite(best_sites_, search_range_);
+        current_bee->HasUniqueSite(selected_sites_, search_range_);
 
-        if(current_bee->HasUniqueSite(best_sites_, range_) && current_bee->HasUniqueSite(selected_sites_, range_) ){
+        if(current_bee->HasUniqueSite(best_sites_, search_range_) && current_bee->HasUniqueSite(selected_sites_, search_range_) ){
             selected_sites_.push_back(current_bee);
         }
 

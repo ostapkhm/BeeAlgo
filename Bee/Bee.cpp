@@ -1,5 +1,30 @@
 #include "Bee.h"
 
+
+int Bee::count_ = 2;
+
+Bee::Bee(double min_X_value, double max_X_value, double (*calculate_func)(std::vector<double>), bool maximisation) {
+    maximisation_ = maximisation;
+    calculate_func_ = calculate_func;
+    min_pos_range_ = std::vector<double> (count_, min_X_value);
+    max_pos_range_ = std::vector<double> (count_, max_X_value);
+
+    for(int i = 0; i < count_; i++){
+        position_.push_back(Utils::Uniform(min_pos_range_[i], max_pos_range_[i]));
+    }
+
+    CalculateFitness();
+}
+
+void Bee::CalculateFitness() {
+    if(maximisation_){
+        fitness_ = calculate_func_({position_[0], position_[1]});
+    }
+    else{
+        fitness_ = -calculate_func_({position_[0], position_[1]});
+    }
+}
+
 bool Bee::HasUniqueSite(const std::vector<Bee*>& bees, std::vector<double> range) {
     if(bees.empty()){
         return true;
@@ -90,5 +115,6 @@ std::string Bee::ToString() {
     res += ")\n";
     return res;
 }
+
 
 
