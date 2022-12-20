@@ -7,10 +7,11 @@
 #include <cstdlib>
 
 #include "../Utils.h"
+#include "../Function.h"
 
 class Bee {
 public:
-    Bee(double min_X_value, double max_X_value, double (*calculate_func)(std::vector<double>), bool maximisation=false);
+    Bee(Function* func, bool maximisation=false);
 
     void CalculateFitness();
 
@@ -18,7 +19,6 @@ public:
     static bool Compare(Bee* bee1, Bee* bee2);
     void GoTo(std::vector<double> position, std::vector<double> position_range);
     void GoToRandom();
-
     void CheckPosition();
 
     std::vector<double> get_position(){
@@ -31,16 +31,6 @@ public:
 
     std::string ToString();
 
-    static std::vector<double> get_search_range(){
-        std::vector<double> res(count_, 50.0);
-        return res;
-    }
-
-    static std::vector<double> get_koef_range(){
-        std::vector<double> res(count_, 0.98);
-        return res;
-    }
-
 protected:
     // fitness_ - value of objective function
     // maximization_ - whether the task is to maximize or minimize an objective function
@@ -51,8 +41,8 @@ protected:
     std::vector<double> position_;
     double fitness_;
     bool maximisation_;
-    static int count_;
-    double (*calculate_func_)(std::vector<double>);
+    int count_;
+    std::function<double(std::vector<double>)> calculate_func_;
 };
 
 

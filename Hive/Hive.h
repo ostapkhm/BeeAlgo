@@ -9,8 +9,7 @@
 class Hive {
 public:
     Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count, int best_sites_count,
-         double (*objective_func)(std::vector<double>), std::vector<double> search_range, double min_x_bees_pos, double min_y_bees_pos,
-         bool maximisation=false);
+         Function* objective_func, std::vector<double> search_range, bool maximisation=false);
 
     int SendBees(const std::vector<double>& position, int idx, int count);
 

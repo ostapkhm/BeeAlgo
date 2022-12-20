@@ -1,18 +1,21 @@
 #include <iostream>
+#include <iomanip>
+
 #include <matplot/matplot.h>
 #include "Hive/Hive.h"
 
 namespace plt = matplot;
 
-void plot(const std::function<double(double, double)>& objective_func,
+void plot(Function* func,
           const std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>& data1,
           const std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>& data2,
           int plot_idx){
 
-    auto [X, Y] = plt::meshgrid(plt::linspace(-100, 100, 300), plt::linspace(-100, 100, 380));
+    auto [X, Y] = plt::meshgrid(plt::linspace(func->get_min_X()[0] - 1, func->get_max_X()[0] + 1, 320),
+                                plt::linspace(func->get_min_X()[1] - 1, func->get_max_X()[1] + 1, 320));
 
     plt::vector_2d Z;
-    Z = plt::transform(X, Y, objective_func);
+    Z = plt::transform(X, Y, func->get_objective_func_2d_());
 
     auto [x1, y1, z1] = data1;
     auto [x2, y2, z2] = data2;
@@ -36,7 +39,7 @@ void plot(const std::function<double(double, double)>& objective_func,
 }
 
 
-void plot_sites(Hive* hive, int count, const std::function<double(double, double)>& objective_func){
+void plot_sites(Hive* hive, int count, Function* func){
     std::vector<double> x1;
     std::vector<double> x2;
     std::vector<double> y1;
@@ -56,104 +59,50 @@ void plot_sites(Hive* hive, int count, const std::function<double(double, double
         z2.push_back(el->get_fitness());
     }
 
-    plot(objective_func, std::make_tuple(x1, y1, z1), std::make_tuple(x2, y2, z2), count);
+    plot(func, std::make_tuple(x1, y1, z1), std::make_tuple(x2, y2, z2), count);
 }
-
-//------------- Functions -------------------//
-
-double (*LeviFunc_)(double, double){
-    [](double x, double y){
-        return pow(sin(3 * M_PI * x), 2) + pow((x - 1), 2) * (1 + pow(sin(3 * M_PI * y), 2))
-               + pow((y - 1), 2) * (1 + pow(sin(2 * M_PI * y), 2));
-    }
-};
-
-double LeviFunc(std::vector<double> X){
-    return LeviFunc_(X[0], X[1]);
-}
-
-
-double (*EgholderFunc_)(double, double){
-        [](double x, double y){
-            return -(y + 47)* sin(sqrt(std::abs(x/2 + y + 47))) - x*sin(sqrt(std::abs(x - (y + 47))));
-        }
-};
-
-double EgholderFunc(std::vector<double> X){
-    return EgholderFunc_(X[0], X[1]);
-}
-
-double (*RastriginFunc_)(double, double){
-        [](double x, double y){
-            return 10 * 2 + (x*x - 10*cos(2 * plt::pi * x)) + (y*y - 10*cos(2 * plt::pi * y));
-        }
-};
-
-double RastriginFunc(std::vector<double> X){
-    return RastriginFunc_(X[0], X[1]);
-}
-
-
-double (*RosenbrokFunc_)(double, double){
-        [](double x, double y){
-            return 100 * pow((y - x*x), 2) + pow(x - 1, 2);
-        }
-};
-
-double RosenbrokFunc(std::vector<double> X){
-    return RosenbrokFunc_(X[0], X[1]);
-}
-
-double (*DeJoungFunc_)(double, double){
-        [](double x, double y){
-            return x*x+y*y;
-        }
-};
-
-double DeJoungFunc(std::vector<double> X){
-    return DeJoungFunc_(X[0], X[1]);
-}
-
-//------------- Functions -------------------//
-
-
-
 
 int main() {
     srand (static_cast <unsigned> (time(nullptr)));
 
-    int scout_bee_count = 300;
-    int selected_bee_count =  10;
+    int scout_bee_count = 60;
+    int selected_bee_count = 20;
     int best_bee_count = 30;
     int selected_sites_count = 15;
-    int best_sites_count = 5;
-    double min_x_pos = -52;
-    double max_x_pos = 52;
+    int best_sites_count = 10;
+    std::vector<double> search_range = {60, 60};
 
-    int max_iteration = 1000;
+
+
+    //Function func(RastriginFunc, 2, {-5.12, -5.12}, {5.12, 5.12}, RastriginFunc({0, 0}));
+    //Function func(DeJoungFunc, 2, {-50, -50}, {50, 50}, DeJoungFunc({0, 0}));
+    //Function func(RosenbrokFunc, 2, {-50, -50}, {50, 50}, RosenbrokFunc({1, 1}));
+    Function func(Utils::EgholderFunc, {-512, -512}, {512, 512}, Utils::EgholderFunc(512, 404.2319));
+    //Function func(LeviFunc, 2, {-10, -10}, {10, 10}, LeviFunc({1, 1}));
+
+    Hive hive(scout_bee_count, selected_bee_count, best_bee_count, selected_sites_count, best_sites_count, &func, search_range);
+
     int max_func_counter = 10;
-    std::vector<double> koefs = Bee::get_koef_range();
-    int func_counter;
+    int func_counter = 0;
+    std::vector<double> koefs = {0.9, 0.9};
 
-    Hive hive(scout_bee_count, selected_bee_count, best_bee_count, selected_sites_count, best_sites_count,
-              &DeJoungFunc, Bee::get_search_range(), min_x_pos, max_x_pos);
-
-
-    double best_func_val = -1.0e9;
-    func_counter = 0;
+    double best_func_val = 1.0e9;
     int counter = 0;
 
-    for(int i = 0; i < max_iteration; i++){
+    double eps = 1e-6;
+    int iteration_nb = 0;
+
+    while(std::abs(best_func_val - func.get_global_min()) > eps){
         hive.Step();
 
         if(hive.get_best_fitness() != best_func_val){
             best_func_val = hive.get_best_fitness();
-
-            std::cout << "\nIteration number->" << i << std::endl;
+            std::cout << "\nIteration number->" << iteration_nb << std::endl;
+            std::cout.precision(10);
             std::cout << "Best position->" << hive.get_best_position()[0] << " " << hive.get_best_position()[1] << std::endl;
-            std::cout << "Best fitness->" << hive.get_best_fitness() << std::endl;
+            std::cout << "Best fitness->" <<  hive.get_best_fitness() << std::endl;
 
-            plot_sites(&hive, counter, DeJoungFunc_);
+            plot_sites(&hive, counter, &func);
             counter++;
         }
         else{
@@ -170,13 +119,20 @@ int main() {
                 hive.set_range(new_range);
                 func_counter = 0;
 
-                std::cout << "\n***Iteration number->" << i << std::endl;
+                std::cout << "\n***Iteration number->" << iteration_nb << std::endl;
                 std::cout << "New Range -> " << new_range[0] << " , " << new_range[1] << std::endl;
+                std::cout.precision(10);
                 std::cout << "Best position->" << hive.get_best_position()[0] << " " << hive.get_best_position()[1] << std::endl;
                 std::cout << "Best fitness->" << hive.get_best_fitness() << std::endl;
             }
         }
+        iteration_nb++;
     }
+
+    std::cout << std::endl;
+    std::cout << "Total iteration nb->" << iteration_nb << std::endl;
+    std::cout.precision(10);
+    std::cout << "Real global min -> " <<  func.get_global_min() << std::endl;
 
     return 0;
 }

@@ -1,9 +1,9 @@
 #include <utility>
 #include "Hive.h"
 
+
 Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count,
-           int best_sites_count, double (*objective_func)(std::vector<double>), std::vector<double> search_range,
-           double min_x_bees_pos, double min_y_bees_pos, bool maximization) {
+           int best_sites_count, Function *objective_func, std::vector<double> search_range, bool maximization) {
 
     scout_bee_count_ = scout_bee_count;
     selected_bee_count_ = selected_bee_count;
@@ -15,17 +15,19 @@ Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int 
 
     int bee_count = scout_bee_count_ + selected_bee_count_ * selected_sites_count_ + best_bee_count_ * best_sites_count_;
 
+    // Initialize flower patches
     for(int i = 0; i < bee_count; i++){
-        swarm_.push_back(new Bee(min_x_bees_pos, min_y_bees_pos, objective_func, maximization));
+        swarm_.push_back(new Bee(objective_func, maximization));
     }
 
-    // For the first time analyzing info only from scout bees
-    sort(swarm_.begin(), swarm_.begin() + scout_bee_count_, Bee::Compare);
+    // For the first time analyze info only from scouts
+    sort(swarm_.begin(), swarm_.begin() + scout_bee_count, Bee::Compare);
     best_position_ = swarm_[0]->get_position();
     best_fitness_ = swarm_[0]->get_fitness();
 }
 
 int Hive::SendBees(const std::vector<double>& position, int idx, int count) {
+    // Performing local search
     Bee* current_bee;
 
     for(int i = 0; i < count; i++){
@@ -59,6 +61,7 @@ bool Hive::BeeWasUsed(Bee* bee) {
 void Hive::Step() {
     // Choose those bees that found best_sites
 
+    // Updating scouts
     best_sites_ = { swarm_[0] };
 
     Bee* current_bee;
@@ -96,7 +99,7 @@ void Hive::Step() {
     }
 
     // Send bees on a mission
-
+    // Waggle dance
     int bee_index = 1;
 
     for(auto best_bee: best_sites_){
@@ -108,6 +111,7 @@ void Hive::Step() {
     }
 
     // Spread the rest of bees randomly
+    // Performing global search using these bees that are not working currently
     for(int i = bee_index; i < swarm_.size(); i++){
         swarm_[i]->GoToRandom();
     }
@@ -126,3 +130,5 @@ void Hive::SwarmInfo() {
     }
     std::cout << "-------------------------" << std::endl;
 }
+
+

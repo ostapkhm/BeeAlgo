@@ -1,13 +1,12 @@
 #include "Bee.h"
 
-
-int Bee::count_ = 2;
-
-Bee::Bee(double min_X_value, double max_X_value, double (*calculate_func)(std::vector<double>), bool maximisation) {
+Bee::Bee(Function *func, bool maximisation) {
     maximisation_ = maximisation;
-    calculate_func_ = calculate_func;
-    min_pos_range_ = std::vector<double> (count_, min_X_value);
-    max_pos_range_ = std::vector<double> (count_, max_X_value);
+    calculate_func_ = func->get_objective_func_();
+    count_ = func->get_variables_amount();
+
+    min_pos_range_ = func->get_min_X();
+    max_pos_range_ = func->get_max_X();
 
     for(int i = 0; i < count_; i++){
         position_.push_back(Utils::Uniform(min_pos_range_[i], max_pos_range_[i]));
@@ -16,12 +15,13 @@ Bee::Bee(double min_X_value, double max_X_value, double (*calculate_func)(std::v
     CalculateFitness();
 }
 
+
 void Bee::CalculateFitness() {
     if(maximisation_){
-        fitness_ = -calculate_func_({position_[0], position_[1]});
+        fitness_ = -calculate_func_(position_);
     }
     else{
-        fitness_ = calculate_func_({position_[0], position_[1]});
+        fitness_ = calculate_func_(position_);
     }
 }
 
@@ -115,6 +115,4 @@ std::string Bee::ToString() {
     res += ")\n";
     return res;
 }
-
-
 

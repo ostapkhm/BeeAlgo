@@ -16,7 +16,7 @@ if(NOT matplotplusplus_POPULATED)
 endif()
 
 set(Headers Bee/Bee.h Hive/Hive.h Utils.h)
-set(Sources main.cpp Bee/Bee.cpp Hive/Hive.cpp)
+set(Sources main.cpp Bee/Bee.cpp Hive/Hive.cpp Function.h)
 
 add_executable(BeesAlgo ${Headers} ${Sources})
 target_link_libraries(BeesAlgo PUBLIC matplot)
