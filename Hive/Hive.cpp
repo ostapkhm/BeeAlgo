@@ -168,10 +168,6 @@ void Hive::Optimize(double eps) {
                 std::transform(search_range_.begin(), search_range_.end(), search_range_.begin(),
                                std::bind(std::multiplies<>(), std::placeholders::_1, shrinking_koef_));
 
-                if(visualize_){
-                    statistics_->MakePlot();
-                    statistics_->Info();
-                }
                 stagnation_counter = 0;
             }
         }
