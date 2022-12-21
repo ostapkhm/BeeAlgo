@@ -7,6 +7,8 @@
 
 class Function {
 public:
+    Function() = default;
+
     Function(double (*objective_func)(std::vector<double>), int variables_amount,
              const std::vector<double>& min_X, const std::vector<double>& max_X, double global_min):
              objective_func_(objective_func), max_X_(max_X), min_X_(min_X), variables_amount_(variables_amount),

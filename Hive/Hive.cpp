@@ -2,16 +2,27 @@
 #include "Hive.h"
 
 
-Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count,
-           int best_sites_count, Function *objective_func, std::vector<double> search_range, bool maximization) {
+Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int selected_sites_count, int best_sites_count,
+           Function* objective_func, std::vector<double> search_range, double shrinking_koef, int stagnation_cycles_lim,
+           bool visualize, bool maximization) {
 
     scout_bee_count_ = scout_bee_count;
     selected_bee_count_ = selected_bee_count;
     best_bee_count_ = best_bee_count;
     selected_sites_count_ = selected_sites_count;
     best_sites_count_ = best_sites_count;
+    func_ = objective_func;
     search_range_ = std::move(search_range);
+    shrinking_koef_ = shrinking_koef;
+    stagnation_cycles_lim_ = stagnation_cycles_lim;
     maximization_ = maximization;
+
+    if(objective_func->get_objective_func_2d_()){
+        visualize_ = visualize;
+    }
+    else{
+        visualize_ = false;
+    }
 
     int bee_count = scout_bee_count_ + selected_bee_count_ * selected_sites_count_ + best_bee_count_ * best_sites_count_;
 
@@ -24,6 +35,8 @@ Hive::Hive(int scout_bee_count, int selected_bee_count, int best_bee_count, int 
     sort(swarm_.begin(), swarm_.begin() + scout_bee_count, Bee::Compare);
     best_position_ = swarm_[0]->get_position();
     best_fitness_ = swarm_[0]->get_fitness();
+
+    statistics_ = new Statistics(this);
 }
 
 int Hive::SendBees(const std::vector<double>& position, int idx, int count) {
@@ -131,4 +144,36 @@ void Hive::SwarmInfo() {
     std::cout << "-------------------------" << std::endl;
 }
 
+void Hive::Optimize(double eps) {
+    double best_func_val = 1e9;
+    int stagnation_counter = 0;
 
+    while (std::abs(best_func_val - func_->get_global_min()) > eps) {
+        Step();
+
+        statistics_->IncreaseIterationAmount();
+
+        if (get_best_fitness() != best_func_val) {
+            best_func_val = get_best_fitness();
+
+            if(visualize_){
+                statistics_->MakePlot();
+                statistics_->Info();
+            }
+        }
+        else {
+            stagnation_counter += 1;
+
+            if (stagnation_counter == stagnation_cycles_lim_) {
+                std::transform(search_range_.begin(), search_range_.end(), search_range_.begin(),
+                               std::bind(std::multiplies<>(), std::placeholders::_1, shrinking_koef_));
+
+                if(visualize_){
+                    statistics_->MakePlot();
+                    statistics_->Info();
+                }
+                stagnation_counter = 0;
+            }
+        }
+    }
+}
